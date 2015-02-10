@@ -196,7 +196,6 @@ to am-i-guarded ;;patch procedure
     
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -266,7 +265,7 @@ large-wide
 large-wide
 0
 15
-4
+0
 1
 1
 NIL
@@ -281,7 +280,7 @@ small-narrow
 small-narrow
 0
 15
-4
+2
 1
 1
 NIL
@@ -296,7 +295,7 @@ small-wide
 small-wide
 0
 15
-3
+0
 1
 1
 NIL
