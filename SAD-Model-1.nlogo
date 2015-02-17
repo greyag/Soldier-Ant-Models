@@ -98,6 +98,7 @@ end
 
 to setup-cavity-sets ;;patch procedure
   set cavity-1 patches with [cavity-number = 1]
+  
   set cavity-2 patches with [cavity-number = 2]
   set cavity-3 patches with [cavity-number = 3]
   set cavity-4 patches with [cavity-number = 4]
@@ -292,7 +293,6 @@ to am-i-guarded ;;patch procedure
    ]
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
