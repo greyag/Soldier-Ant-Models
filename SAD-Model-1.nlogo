@@ -1,5 +1,22 @@
 globals [
   cavity-visual-size
+  cavity-1
+  cavity-2
+  cavity-3
+  cavity-4
+  cavity-5
+  cavity-6
+  cavity-7
+  cavity-8
+  cavity-9
+  cavity-10
+  cavity-11
+  cavity-12
+  cavity-13
+  cavity-14
+  cavity-15
+  cavity-16
+  
   ]
 
 patches-own [ 
@@ -35,12 +52,13 @@ to setup
 end
 
 to setup-patches
-  set cavity-visual-size 2
+  set cavity-visual-size 1
   let grid-coords create-grid-coords
   ask patches
   [
     setup-cavity-locations grid-coords
     setup-cavity-types
+    setup-cavity-sets
   ]
 end
 
@@ -72,10 +90,29 @@ end
 to setup-cavity-locations [possible-coordinate-list];; patch procedure
   foreach possible-coordinate-list
   [
-  if distancexy (first ?) (last ?) < cavity-visual-size
+  if (abs(pxcor - (first ?))) < cavity-visual-size and (abs(pycor - (last ?))) < cavity-visual-size
     [set cavity-number ((position ? possible-coordinate-list) + 1)]
   ]
-  set pcolor (scale-color red cavity-number 0 16)
+  ;;set pcolor (scale-color red cavity-number 0 16)
+end
+
+to setup-cavity-sets ;;patch procedure
+  set cavity-1 patches with [cavity-number = 1]
+  set cavity-2 patches with [cavity-number = 2]
+  set cavity-3 patches with [cavity-number = 3]
+  set cavity-4 patches with [cavity-number = 4]
+  set cavity-5 patches with [cavity-number = 5]
+  set cavity-6 patches with [cavity-number = 6]
+  set cavity-7 patches with [cavity-number = 7]
+  set cavity-8 patches with [cavity-number = 8]
+  set cavity-9 patches with [cavity-number = 9]
+  set cavity-10 patches with [cavity-number = 10]
+  set cavity-11 patches with [cavity-number = 11]
+  set cavity-12 patches with [cavity-number = 12]
+  set cavity-13 patches with [cavity-number = 13]
+  set cavity-14 patches with [cavity-number = 14]
+  set cavity-15 patches with [cavity-number = 15]
+  set cavity-16 patches with [cavity-number = 16]
 end
 
 to setup-cavity-types
@@ -119,7 +156,7 @@ to setup-turtles
   ;;type [pxcor] of start-place
   crt num-ants
   [
-    set size 3
+    set size cavity-visual-size * 2
     set color orange ;; color when exploring
     set guard? FALSE
     let start-place one-of (patches with [home? = TRUE])
@@ -133,7 +170,32 @@ end
 
 to go ;; forever button
   if ((turtles with [guard? = TRUE]) = turtles)
-    [stop]
+    [
+      ;create output file
+      file-open "SAD-Model1.csv"
+      file-print date-and-time
+      file-type "Volume large?, "
+      file-type "Entrance Size narrow?,"
+      file-print "Number of Guards"
+      let list-of-cavities (list cavity-1 cavity-2 cavity-3 cavity-4
+        cavity-5 cavity-6 cavity-7 cavity-8
+        cavity-9 cavity-10 cavity-11 cavity-12
+        cavity-13 cavity-14 cavity-15 cavity-16)
+      let patch-1 one-of cavity-1
+      
+      foreach list-of-cavities
+      [
+        set patch-1 one-of ?
+        if [cavity?] of patch-1 = TRUE
+        [
+          file-type (word ([large?] of patch-1) ",")
+          file-type (word ([narrow?] of patch-1) ",")
+          file-print (word ([number-of-guards] of patch-1))
+        ]
+      ]
+      file-close
+      stop
+    ]
   
   ask turtles
   [
@@ -179,32 +241,67 @@ to wiggle ;;turtle procedure
   if not can-move? 1 [ rt 180 ]
 end
 
+to-report my-cavity [cavityIDnumber]
+  if cavityIDnumber = 1
+  [report cavity-1]
+  if cavityIDnumber = 2
+  [report cavity-2]
+  if cavityIDnumber = 3
+  [report cavity-3]
+  if cavityIDnumber = 4
+  [report cavity-4]
+  if cavityIDnumber = 5
+  [report cavity-5]
+  if cavityIDnumber = 6
+  [report cavity-6]
+  if cavityIDnumber = 7
+  [report cavity-7]
+  if cavityIDnumber = 8
+  [report cavity-8]
+  if cavityIDnumber = 9
+  [report cavity-9]
+  if cavityIDnumber = 10
+  [report cavity-10]
+  if cavityIDnumber = 11
+  [report cavity-11]
+  if cavityIDnumber = 12
+  [report cavity-12]
+  if cavityIDnumber = 13
+  [report cavity-13]
+  if cavityIDnumber = 14
+  [report cavity-14]
+  if cavityIDnumber = 15
+  [report cavity-15]
+  if cavityIDnumber = 16
+  [report cavity-16]
+end
+
+
 to am-i-guarded ;;patch procedure
   if cavity? = TRUE
   [
-   let my-cav-number cavity-number
-   let my-cavity patches with [cavity-number = my-cav-number]
-   let turtles-on-cavity turtles-on my-cavity
+    ;;print cavity-number
+    ;;print my-cavity cavity-number
+   let my-cavity-mates my-cavity cavity-number
+   let turtles-on-cavity turtles-on my-cavity-mates
    let my-cavity-guards turtles-on-cavity with [guard? = TRUE]
    if any? my-cavity-guards
    [
      set guarded? TRUE
      set number-of-guards count my-cavity-guards
    ]
-   
-    
-    
   ]
 end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
 10
-640
-445
-52
-50
-4.0
+586
+407
+30
+30
+6.0
 1
 10
 1
@@ -214,10 +311,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--52
-52
--50
-50
+-30
+30
+-30
+30
 0
 0
 1
