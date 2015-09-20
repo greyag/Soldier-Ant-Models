@@ -173,7 +173,7 @@ to go ;; forever button
   if ((turtles with [guard? = TRUE]) = turtles)
     [
       ;create output file
-      file-open "SAD-Model2.csv"
+      file-open "SAD-Model2-exp.csv"
       file-print date-and-time
       file-type "LN-percent,"
       file-type "LW-percent,"
@@ -185,6 +185,7 @@ to go ;; forever button
       file-print (word SW-percent)
       file-type "Volume large?, "
       file-type "Entrance Size narrow?,"
+      file-type "Home?, "
       file-print "Number of Guards"
       let list-of-cavities (list cavity-1 cavity-2 cavity-3 cavity-4
         cavity-5 cavity-6 cavity-7 cavity-8
@@ -199,6 +200,7 @@ to go ;; forever button
         [
           file-type (word ([large?] of patch-1) ",")
           file-type (word ([narrow?] of patch-1) ",")
+          file-type (word ([home?] of patch-1) ",")
           file-print (word ([number-of-guards] of patch-1))
         ]
       ]
@@ -232,8 +234,10 @@ to explore ;;turtle procedure
   ifelse [cavity?] of patch-here = TRUE
   [ifelse ((patch-good-enough patch-here) = TRUE)
     [set guard? TRUE
+     set explore? FALSE
      set color grey]
-    [wiggle
+    [ set explore? FALSE
+      wiggle
      fd 1]]
   [wiggle
     fd 1]
@@ -245,6 +249,8 @@ to guard
 end
 
 to-report patch-good-enough [a-patch] ;; turtle procedure
+  if [home?] of a-patch = TRUE
+  [report FALSE]
   if ([large?] of a-patch = TRUE) and ([narrow?] of a-patch = TRUE)
   [
     ifelse (random-float 1 < LN-percent)
@@ -414,7 +420,7 @@ LW-percent
 LW-percent
 0
 1
-0.67
+1
 .01
 1
 NIL
@@ -429,7 +435,7 @@ SN-percent
 SN-percent
 0
 1
-0.33
+1
 .01
 1
 NIL
@@ -444,7 +450,7 @@ SW-percent
 SW-percent
 0
 1
-0
+1
 .01
 1
 NIL
@@ -459,7 +465,7 @@ large-narrow
 large-narrow
 0
 15
-3
+4
 1
 1
 NIL
@@ -474,7 +480,7 @@ large-wide
 large-wide
 0
 15
-3
+4
 1
 1
 NIL
@@ -489,7 +495,7 @@ small-narrow
 small-narrow
 0
 16
-3
+4
 1
 1
 NIL
@@ -516,7 +522,7 @@ INPUTBOX
 178
 497
 num-ants
-200
+50
 1
 0
 Number
@@ -876,6 +882,32 @@ NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="Model2-50ants-.1s-10rep" repetitions="10" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="5000"/>
+    <steppedValueSet variable="LN-percent" first="0" step="0.1" last="1"/>
+    <steppedValueSet variable="LW-percent" first="0" step="0.1" last="1"/>
+    <enumeratedValueSet variable="large-wide">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-narrow">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-ants">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-wide">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="SN-percent" first="0" step="0.1" last="1"/>
+    <enumeratedValueSet variable="small-narrow">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="SW-percent" first="0" step="0.1" last="1"/>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default

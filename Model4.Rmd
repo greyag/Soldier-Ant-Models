@@ -1,0 +1,99 @@
+---
+title: "Model4"
+author: "Greta Gadbois"
+date: "September 19, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+wideVnarrow = read.csv('SAD-Model4-2.csv')
+largeVsmall = read.csv('SAD-Model4-3.csv')
+
+library(plyr)
+
+wideVnarrow["ln.max"] = pmax(wideVnarrow$ln1, wideVnarrow$ln2)
+wideVnarrow["ln.min"] = pmin(wideVnarrow$ln1, wideVnarrow$ln2)
+wideVnarrow["lw.max"] = pmax(wideVnarrow$lw1, wideVnarrow$lw2)
+wideVnarrow["lw.min"] = pmin(wideVnarrow$lw1, wideVnarrow$lw2)
+
+largeVsmall['ln.max'] = pmax(largeVsmall$ln1, largeVsmall$ln2)
+largeVsmall['ln.min'] = pmin(largeVsmall$ln1, largeVsmall$ln2)
+largeVsmall['sn.max'] = pmax(largeVsmall$sn1, largeVsmall$sn2)
+largeVsmall['sn.min'] = pmin(largeVsmall$sn1, largeVsmall$sn2)
+
+enough.wide.guards = wideVnarrow$enough.guards.wide[1]
+enough.narrow.guards =wideVnarrow$enough.guards.narrow[1]
+
+aggLvS <- ddply(largeVsmall, "num.ants", summarise, 
+                #reps = length(ln.max),
+                sn.max = mean(sn.max),
+                ln.max = mean(ln.max),
+                sn.min = mean(sn.min),
+                ln.min = mean(ln.min)
+                #ln.max.sd = sd(ln.max),
+                #ln.min.sd = sd(ln.min),
+                #sn.max.sd = sd(sn.max),
+                #sn.min.sd = sd(sn.min)
+                )
+aggWvN <- ddply(wideVnarrow, "num.ants", summarise,
+                ln.max = mean(ln.max),
+                lw.max = mean(lw.max),
+                ln.min = mean(ln.min),
+                lw.min = mean(lw.min)
+                #lw.max.sd = sd(lw.max),
+                #lw.min.sd = sd(lw.min),
+                #ln.max.sd = sd(ln.max),
+                #ln.min.sd = sd(ln.min)
+                )
+
+
+
+```
+
+You can also embed plots, for example:
+
+```{r}
+library(ggplot2)
+library(reshape2)
+aggWvN
+aggWvN.m <- melt(aggWvN, id.vars = "num.ants")
+aggWvN.m
+ggplot(aggWvN.m, aes(x = num.ants, y = value, fill=variable)) + geom_bar(stat='identity')
+
+
+aggLvS.m <- melt(aggLvS, id.vars = "num.ants")
+ggplot(aggLvS.m, aes(x = num.ants, y = value, fill=variable)) + geom_bar(stat='identity')
+
+```
+calculate fitness
+```{r}
+
+calculateFitness <- function(dfm){
+  dfm$h <- ifelse(dfm$variable == 'ln.max' | 
+                          dfm$variable == 'sn.max' | 
+                          dfm$variable == 'ln.min' | 
+                          dfm$variable == 'sn.min', ceiling(enough.narrow.guards/2), ceiling(enough.wide.guards/2))
+  dfm$v <- ifelse(dfm$variable == 'ln.max' |
+                          dfm$variable == 'ln.min' |
+                          dfm$variable == 'lw.max' |
+                          dfm$variable == 'lw.min', 60, 20)
+  
+  dfm$d <- (dfm$h^(-1/5))/(1+exp(-(5/dfm$h)*(dfm$value-dfm$h)))
+  dfm$s <- exp(-(5)*(1-dfm$d))
+  
+  dfm
+  
+  dfFit <- ddply(dfm, "num.ants", summarise, fitness = sum(v*s))
+  
+  plot(dfFit$num.ants, dfFit$fitness)
+}
+
+calculateFitness(aggWvN.m)
+calculateFitness(aggLvS.m)
+
+
+```
