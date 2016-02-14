@@ -10,10 +10,40 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r}
-wideVnarrow = read.csv('SAD-Model4-2.csv')
-largeVsmall = read.csv('SAD-Model4-3.csv')
+
+largeVsmall = read.csv('SAD-Model4-12.csv')
+wideVnarrow = read.csv('SAD-Model4-11.csv')
+enough.guards.wide = wideVnarrow$enough.guards.wide[1]
+enough.guards.narrow =wideVnarrow$enough.guards.narrow[1]
+
 
 library(plyr)
+library(reshape2)
+
+drop <- c("enough.guards.wide", 'enough.guards.narrow', 'large.narrow', 'large.wide', 'small.narrow', 'small.wide', 'h')
+wideVnarrow <- wideVnarrow[ ,!(names(wideVnarrow) %in% drop)]
+largeVsmall <- largeVsmall[ ,!(names(largeVsmall) %in% drop)]
+
+calculate.fitness.by.run  <- function (df) {
+  df$id = seq.int(nrow(df))
+  dfm <- melt(df, id.vars = c( "id","num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"))
+  dfm$h <- ifelse(grepl("n", dfm$variable), ceiling(enough.guards.narrow/2), ceiling(enough.guards.wide/2))
+  dfm$v <- ifelse(grepl("l", dfm$variable), 60, 20)
+  dfm$d <- (dfm$h^(-1/5))/(1+exp(-(5/dfm$h)*(dfm$value-dfm$h)))
+  dfm$s <- exp(-(5)*(1-dfm$d))
+  dfFit <- ddply(dfm, c("id","num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"), summarise, fitness = sum(v*s))
+  return(dfFit)
+}
+
+wVnFit <- calculate.fitness.by.run(wideVnarrow)
+aggWvN <- ddply(wVnFit, c("num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"), summarise, 
+                 fitness = mean(fitness),
+                 fitSD = sd(fitness))
+
+lVsFit <- calculate.fitness.by.run(largeVsmall)
+aggLvS <- ddply(lVsFit, c("num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"), summarise, 
+                 fitness = mean(fitness),
+                 fitSD = sd(fitness))
 
 wideVnarrow["ln.max"] = pmax(wideVnarrow$ln1, wideVnarrow$ln2)
 wideVnarrow["ln.min"] = pmin(wideVnarrow$ln1, wideVnarrow$ln2)
@@ -24,11 +54,12 @@ largeVsmall['ln.max'] = pmax(largeVsmall$ln1, largeVsmall$ln2)
 largeVsmall['ln.min'] = pmin(largeVsmall$ln1, largeVsmall$ln2)
 largeVsmall['sn.max'] = pmax(largeVsmall$sn1, largeVsmall$sn2)
 largeVsmall['sn.min'] = pmin(largeVsmall$sn1, largeVsmall$sn2)
-
-enough.wide.guards = wideVnarrow$enough.guards.wide[1]
-enough.narrow.guards =wideVnarrow$enough.guards.narrow[1]
-
-aggLvS <- ddply(largeVsmall, "num.ants", summarise, 
+# 
+# enough.wide.guards = wideVnarrow$enough.guards.wide[1]
+# enough.narrow.guards =wideVnarrow$enough.guards.narrow[1]
+# 
+# 
+LvStoGraph <- ddply(largeVsmall, "num.ants", summarise, 
                 #reps = length(ln.max),
                 sn.max = mean(sn.max),
                 ln.max = mean(ln.max),
@@ -39,18 +70,18 @@ aggLvS <- ddply(largeVsmall, "num.ants", summarise,
                 #sn.max.sd = sd(sn.max),
                 #sn.min.sd = sd(sn.min)
                 )
-aggWvN <- ddply(wideVnarrow, "num.ants", summarise,
-                ln.max = mean(ln.max),
-                lw.max = mean(lw.max),
-                ln.min = mean(ln.min),
-                lw.min = mean(lw.min)
-                #lw.max.sd = sd(lw.max),
-                #lw.min.sd = sd(lw.min),
-                #ln.max.sd = sd(ln.max),
-                #ln.min.sd = sd(ln.min)
-                )
 
 
+ WvStoGraph <- ddply(wideVnarrow, "num.ants", summarise,
+                 ln.max = mean(ln.max),
+                 lw.max = mean(lw.max),
+                 ln.min = mean(ln.min),
+                 lw.min = mean(lw.min)
+                 #lw.max.sd = sd(lw.max),
+                 #lw.min.sd = sd(lw.min),
+                 #ln.max.sd = sd(ln.max),
+                 #ln.min.sd = sd(ln.min)
+                 )
 
 ```
 
@@ -59,18 +90,29 @@ You can also embed plots, for example:
 ```{r}
 library(ggplot2)
 library(reshape2)
-aggWvN
-aggWvN.m <- melt(aggWvN, id.vars = "num.ants")
-aggWvN.m
-ggplot(aggWvN.m, aes(x = num.ants, y = value, fill=variable)) + geom_bar(stat='identity')
+LvStoGraph.m <- melt(LvStoGraph, id.vars = c( "num.ants"))
+ggplot(LvStoGraph.m, aes(x = num.ants, y = value, fill=variable)) + 
+  geom_bar(stat='identity') + 
+  scale_fill_discrete(breaks = c("sn.max", "ln.max", "sn.min", "ln.min"), labels=c("Cavity 1: Small volume", "Cavity 2: Large volume", "Cavity 3: Small volume", "Cavity 4: Large Volume"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  scale_y_continuous(breaks = seq(0, 32, by = 4)) +
+  scale_x_continuous(breaks = seq(0, 32, by = 4)) +
+  labs( x = "Number of ants", y = "Simulated Soldier Deployment")
 
 
-aggLvS.m <- melt(aggLvS, id.vars = "num.ants")
-ggplot(aggLvS.m, aes(x = num.ants, y = value, fill=variable)) + geom_bar(stat='identity')
 
-```
+WvStoGraph.m <- melt(WvStoGraph, id.vars = "num.ants")
+ggplot(WvStoGraph.m, aes(x = num.ants, y = value, fill=variable)) + 
+  geom_bar(stat='identity') +
+  scale_fill_discrete(breaks = c("ln.max", "lw.max", "ln.min", "lw.min"), labels=c("Cavity 1: Narrow entrance", "Cavity 2: Wide entrance", "Cavity 3: Narrow entrance", "Cavity 4: Wide entrance"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  scale_y_continuous(breaks = seq(0, 32, by = 4)) +
+  scale_x_continuous(breaks = seq(0, 32, by = 4)) +
+  labs( x = "Number of ants", y = "Simulated Soldier Deployment")
+
+```bb
 calculate fitness
-```{r}
+```{r eval=FALSE}
 
 calculateFitness <- function(dfm){
   dfm$h <- ifelse(dfm$variable == 'ln.max' | 
@@ -87,13 +129,62 @@ calculateFitness <- function(dfm){
   
   dfm
   
-  dfFit <- ddply(dfm, "num.ants", summarise, fitness = sum(v*s))
+  dfFit <- ddply(dfm, c("large.perc", "not.enough", "enough.wide", "enough.narrow", "num.ants"), summarise, fitness = sum(v*s))
   
-  plot(dfFit$num.ants, dfFit$fitness)
+  return(dfFit)
+  #plot(dfFit$num.ants, dfFit$fitness)
 }
 
-calculateFitness(aggWvN.m)
-calculateFitness(aggLvS.m)
+WvNFit = calculateFitness(aggWvN.m)
+#WvNFit[1:100,]
+
+fit4five <- WvNFit[WvNFit$num.ants == 5, ]
+best5 = fit4five[fit4five$fitness == max (fit4five$fitness), ]
+hist(fit4five$fitness)
+bestfive <- fit4five[fit4five$fitness > 40 & fit4five$fitness < 45, ]
+hist(bestfive$enough.narrow)
+hist(bestfive$large.perc)
+hist(bestfive$enough.wide)
+hist(bestfive$not.enough)
+#bestfive
+length(bestfive$fitness)
+
+fit4fifteen <- WvNFit[WvNFit$num.ants == 15, ]
+best15 = fit4fifteen[fit4fifteen$fitness == max (fit4fifteen$fitness), ]
+fit4fifteenplot <- fit4fifteen[fit4fifteen$fitness > 118, ]
+hist(fit4fifteen$fitness)
+bestfifteen <- fit4fifteen[fit4fifteen$fitness <115, ]
+#bestfifteen
+#length(bestfifteen$fitness)
+
+fit4twentyfive <- WvNFit[WvNFit$num.ants == 25, ]
+best25 = fit4twentyfive[fit4twentyfive$fitness == max (fit4twentyfive$fitness), ]
+hist(fit4twentyfive$fitness)
+
+best5
+best15
+best25
+#calculateFitness(aggLvS.m)
+
+holdLPNE5 = fit4twentyfive[fit4twentyfive$large.perc == .5 & fit4twentyfive$not.enough == .9, ]
+#holdLPNE5
+
+plot(holdLPNE5[holdLPNE5$enough.wide ==.1,]$enough.narrow, holdLPNE5[holdLPNE5$enough.wide ==.1,]$fitness, col = "red", ylim = c(110, 125), type = 'l', xlab = 'Proability ant will guard a fully guarded narrow entrance', ylab = 'Colony fitness')
+points(holdLPNE5[holdLPNE5$enough.wide ==.2,]$enough.narrow, holdLPNE5[holdLPNE5$enough.wide ==.2,]$fitness, col = "orange", type = 'l')
+points(holdLPNE5[holdLPNE5$enough.wide ==.3,]$enough.narrow, holdLPNE5[holdLPNE5$enough.wide ==.3,]$fitness, col = "yellow", type = 'l')
+points(holdLPNE5[holdLPNE5$enough.wide ==.4,]$enough.narrow, holdLPNE5[holdLPNE5$enough.wide ==.4,]$fitness, col = "green", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==.5,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==.5,]$fitness, col = "blue", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==.6,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==.6,]$fitness, col = "purple", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==.7,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==.7,]$fitness, col = "cyan", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==.8,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==.8,]$fitness, col = "magenta", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==.9,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==.9,]$fitness, col = "black", type = 'l')
+# points(holdLPNE5[holdLPNE5$enough.wide ==1,]$not.enough, holdLPNE5[holdLPNE5$enough.wide ==1,]$fitness, col = "brown", type = 'l')
+
+
+
+
+
+
 
 
 ```

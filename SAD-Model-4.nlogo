@@ -412,7 +412,7 @@ large-wide
 large-wide
 0
 16
-2
+0
 1
 1
 NIL
@@ -427,7 +427,7 @@ small-narrow
 small-narrow
 0
 16
-0
+2
 1
 1
 NIL
@@ -491,7 +491,7 @@ large-perc
 large-perc
 0
 1
-0.4
+0.9
 .01
 1
 NIL
@@ -506,7 +506,7 @@ small-perc
 small-perc
 0
 1
-0.45
+0.1
 .01
 1
 NIL
@@ -521,7 +521,7 @@ not-enough-perc
 not-enough-perc
 0
 1
-0.05
+0.9
 .01
 1
 NIL
@@ -536,7 +536,7 @@ enough-wide-perc
 enough-wide-perc
 0
 1
-0.05
+0.1
 .01
 1
 NIL
@@ -551,7 +551,7 @@ enough-narrow-perc
 enough-narrow-perc
 0
 1
-0.05
+0.1
 .01
 1
 NIL
@@ -563,7 +563,7 @@ INPUTBOX
 213
 499
 num-ants
-10
+32
 1
 0
 Number
@@ -946,7 +946,7 @@ NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="20" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <enumeratedValueSet variable="num-narrow-guards">
@@ -961,19 +961,143 @@ NetLogo 5.1.0
     <enumeratedValueSet variable="small-wide">
       <value value="0"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="enough-wide-perc" first="0.05" step="0.05" last="1"/>
-    <steppedValueSet variable="not-enough-perc" first="0.05" step="0.05" last="1"/>
+    <steppedValueSet variable="enough-wide-perc" first="0.1" step="0.1" last="1"/>
+    <steppedValueSet variable="not-enough-perc" first="0.5" step="0.1" last="1"/>
     <enumeratedValueSet variable="small-perc">
       <value value="0.45"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="enough-narrow-perc" first="0.05" step="0.05" last="1"/>
+    <steppedValueSet variable="enough-narrow-perc" first="0.1" step="0.1" last="1"/>
     <enumeratedValueSet variable="large-narrow">
       <value value="2"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="num-ants" first="1" step="1" last="32"/>
-    <steppedValueSet variable="large-perc" first="0.05" step="0.05" last="1"/>
+    <steppedValueSet variable="num-ants" first="5" step="10" last="25"/>
+    <steppedValueSet variable="large-perc" first="0.1" step="0.1" last="1"/>
     <enumeratedValueSet variable="small-narrow">
       <value value="0"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="20" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <enumeratedValueSet variable="enough-narrow-perc">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-wide">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-ants">
+      <value value="5"/>
+      <value value="15"/>
+      <value value="25"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="small-perc" first="0.1" step="0.1" last="1"/>
+    <steppedValueSet variable="large-perc" first="0.1" step="0.1" last="1"/>
+    <enumeratedValueSet variable="large-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-narrow-guards">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="enough-wide-perc">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-wide">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-wide-guards">
+      <value value="12"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="not-enough-perc">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="20" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <enumeratedValueSet variable="small-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="large-perc" first="0.1" step="0.1" last="1"/>
+    <enumeratedValueSet variable="large-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-wide">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-narrow-guards">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="not-enough-perc">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="small-perc" first="0.1" step="0.1" last="1"/>
+    <enumeratedValueSet variable="num-ants">
+      <value value="5"/>
+      <value value="15"/>
+      <value value="25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="enough-wide-perc">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-wide">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-wide-guards">
+      <value value="12"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="enough-narrow-perc">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="20" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <enumeratedValueSet variable="small-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-perc">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-narrow">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="large-wide">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-narrow-guards">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="not-enough-perc">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-perc">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="num-ants" first="1" step="1" last="32"/>
+    <enumeratedValueSet variable="enough-wide-perc">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="small-wide">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-wide-guards">
+      <value value="12"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="enough-narrow-perc">
+      <value value="0.1"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

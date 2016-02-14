@@ -1,0 +1,147 @@
+---
+title: "SAD-notEnoughTest"
+author: "Greta Gadbois"
+date: "January 30, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, echo=FALSE}
+notEnoughLarge = read.csv('SAD-Model4-14.csv')
+notEnoughSmall = read.csv('SAD-Model4-15.csv')
+enough.guards.wide = notEnoughLarge$enough.guards.wide[1]
+enough.guards.narrow = notEnoughLarge$enough.guards.narrow[1]
+
+
+library(plyr)
+library(reshape2)
+
+drop <- c("enough.guards.wide", 'enough.guards.narrow', 'large.narrow', 'large.wide', 'small.narrow', 'small.wide', 'h')
+notEnoughLarge <- notEnoughLarge[ ,!(names(notEnoughLarge) %in% drop)]
+notEnoughSmall <- notEnoughSmall[ ,!(names(notEnoughSmall) %in% drop)]
+
+calculate.fitness.by.run  <- function (df, attackRate) {
+  df$id = seq.int(nrow(df))
+  dfm <- melt(df, id.vars = c( "id","num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"))
+  dfm$h <- ifelse(grepl("n", dfm$variable), ceiling(enough.guards.narrow/2), ceiling(enough.guards.wide/2))
+  dfm$v <- ifelse(grepl("l", dfm$variable), 60, 20)
+  dfm$d <- (dfm$h^(-1/5))/(1+exp(-(5/dfm$h)*(dfm$value-dfm$h)))
+  dfm$s <- exp(-(attackRate)*(1-dfm$d))
+  dfFit <- ddply(dfm, c("id","num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"), summarise, fitness = sum(v*s))
+  return(dfFit)
+  }
+
+neLargeFit <- calculate.fitness.by.run(notEnoughLarge,5)
+neLargeFit <- ddply(neLargeFit, c("num.ants"), summarise, 
+                    N = length(fitness),
+                    fitSD = sd(fitness),
+                    fitSE = fitSD/sqrt(N),
+                    fitness = mean(fitness))
+
+neSmallFit <- calculate.fitness.by.run(notEnoughSmall,20)
+neSmallFit <- ddply(neSmallFit, c("num.ants"), summarise, 
+                 N = length(fitness),
+                 fitSD = sd(fitness),
+                 fitSE = fitSD/sqrt(N),
+                 fitness = mean(fitness))
+
+notEnoughLarge["ln.max"] = pmax(notEnoughLarge$ln1, notEnoughLarge$ln2)
+notEnoughLarge["ln.min"] = pmin(notEnoughLarge$ln1, notEnoughLarge$ln2)
+notEnoughLarge["lw.max"] = pmax(notEnoughLarge$lw1, notEnoughLarge$lw2)
+notEnoughLarge["lw.min"] = pmin(notEnoughLarge$lw1, notEnoughLarge$lw2)
+notEnoughLarge["sn.max"] = pmax(notEnoughLarge$sn1, notEnoughLarge$sn2)
+notEnoughLarge["sn.min"] = pmin(notEnoughLarge$sn1, notEnoughLarge$sn2)
+notEnoughLarge["sw.max"] = pmax(notEnoughLarge$sw1, notEnoughLarge$sw2)
+notEnoughLarge["sw.min"] = pmin(notEnoughLarge$sw1, notEnoughLarge$sw2)
+
+notEnoughSmall["ln.max"] = pmax(notEnoughSmall$ln1, notEnoughSmall$ln2)
+notEnoughSmall["ln.min"] = pmin(notEnoughSmall$ln1, notEnoughSmall$ln2)
+notEnoughSmall["lw.max"] = pmax(notEnoughSmall$lw1, notEnoughSmall$lw2)
+notEnoughSmall["lw.min"] = pmin(notEnoughSmall$lw1, notEnoughSmall$lw2)
+notEnoughSmall["sn.max"] = pmax(notEnoughSmall$sn1, notEnoughSmall$sn2)
+notEnoughSmall["sn.min"] = pmin(notEnoughSmall$sn1, notEnoughSmall$sn2)
+notEnoughSmall["sw.max"] = pmax(notEnoughSmall$sw1, notEnoughSmall$sw2)
+notEnoughSmall["sw.min"] = pmin(notEnoughSmall$sw1, notEnoughSmall$sw2)
+
+neLargeGraph <- ddply(notEnoughLarge, "num.ants", summarise, 
+                sn.max = mean(sn.max),
+                sn.min = mean(sn.min),
+                ln.max = mean(ln.max),
+                ln.min = mean(ln.min),
+                sw.max = mean(sw.max),
+                sw.min = mean(sw.min),
+                lw.max = mean(lw.max),
+                lw.min = mean(lw.min)
+                )
+
+neSmallGraph <- ddply(notEnoughSmall, "num.ants", summarise, 
+                sn.max = mean(sn.max),
+                sn.min = mean(sn.min),
+                ln.max = mean(ln.max),
+                ln.min = mean(ln.min),
+                sw.max = mean(sw.max),
+                sw.min = mean(sw.min),
+                lw.max = mean(lw.max),
+                lw.min = mean(lw.min)
+                )
+plot(neSmallFit$num.ants,neSmallFit$fitness, col = 'green', pch = 16,
+     xlab = "Number of Ants", ylab = "Mean Fitness during Low Threat with Standard Error")
+lines(neSmallFit$num.ants,neSmallFit$fitness, col = 'green')
+arrows(neSmallFit$num.ants+.1, neSmallFit$fitness - neSmallFit$fitSE,
+      neSmallFit$num.ants+.1, neSmallFit$fitness + neSmallFit$fitSE,
+      length=.05, angle = 90, code=3, col = 'green')
+points(neLargeFit$num.ants,neLargeFit$fitness, col = 'red',pch = 15)
+lines(neLargeFit$num.ants,neLargeFit$fitness, col = 'red')
+arrows(neLargeFit$num.ants-.1, neLargeFit$fitness - neLargeFit$fitSE,
+       neLargeFit$num.ants-.1, neLargeFit$fitness + neLargeFit$fitSE,
+       length=.05, angle = 90, code=3, col = 'red')
+legend(15,50, c("Low not-enough", 
+                "High not-enough"),
+       lty = c(1,1),
+       pch = c(16,15),
+       col = c('green', 'red'))
+
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+
+library(ggplot2)
+library(reshape2)
+neLargeGraph.m <- melt(neLargeGraph, id.vars = c( "num.ants"))
+ggplot(neLargeGraph.m, aes(x = num.ants, y = value, fill=variable)) + 
+  geom_bar(stat='identity') + 
+  scale_fill_discrete(breaks = c("sn.max", "sn.min","ln.max","ln.min", "sw.max","sw.min", "lw.max", "lw.min" ), labels=c("Cavity 1: Small Narrow", "Cavity 2: Small Narrow", "Cavity 3: Large Narrow","Cavity 4: Large Narrow","Cavity 5: Small Wide","Cavity 6: Small Wide","Cavity 7: Large Wide","Cavity 8: Large Wide"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  scale_y_continuous(breaks = seq(0, 32, by = 4)) +
+  scale_x_continuous(breaks = seq(0, 32, by = 4)) +
+  labs( x = "Number of ants", y = "Simulated Soldier Deployment")
+
+ggplot(data=neLargeGraph.m, aes(x= num.ants, y=value/num.ants, color = variable)) +
+  geom_line(size=2) +
+  scale_color_discrete(breaks = c("sn.max", "sn.min","ln.max","ln.min", "sw.max","sw.min", "lw.max", "lw.min" ), labels=c("Cavity 1: Small Narrow", "Cavity 2: Small Narrow", "Cavity 3: Large Narrow","Cavity 4: Large Narrow","Cavity 5: Small Wide","Cavity 6: Small Wide","Cavity 7: Large Wide","Cavity 8: Large Wide"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  labs( x = "Number of ants", y = "Fraction of Soldiers in each Cavity")
+
+neSmallGraph.m <- melt(neSmallGraph, id.vars = c( "num.ants"))
+ggplot(neSmallGraph.m, aes(x = num.ants, y = value, fill=variable)) + 
+  geom_bar(stat='identity') + 
+  scale_color_discrete(breaks = c("sn.max", "sn.min","ln.max","ln.min", "sw.max","sw.min", "lw.max", "lw.min" ), labels=c("Cavity 1: Small Narrow", "Cavity 2: Small Narrow", "Cavity 3: Large Narrow","Cavity 4: Large Narrow","Cavity 5: Small Wide","Cavity 6: Small Wide","Cavity 7: Large Wide","Cavity 8: Large Wide"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  scale_y_continuous(breaks = seq(0, 32, by = 4)) +
+  scale_x_continuous(breaks = seq(0, 32, by = 4)) +
+  labs( x = "Number of ants", y = "Simulated Soldier Deployment")
+
+ggplot(data=neSmallGraph.m, aes(x= num.ants, y=value/num.ants, color = variable)) +
+  geom_line(size=2) +
+  scale_color_discrete(breaks = c("sn.max", "sn.min","ln.max","ln.min", "sw.max","sw.min", "lw.max", "lw.min" ), labels=c("Cavity 1: Small Narrow", "Cavity 2: Small Narrow", "Cavity 3: Large Narrow","Cavity 4: Large Narrow","Cavity 5: Small Wide","Cavity 6: Small Wide","Cavity 7: Large Wide","Cavity 8: Large Wide"), guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title=element_blank(), legend.text = element_text(size = 16), text = element_text(size=20)) + 
+  labs( x = "Number of ants", y = "Fraction of Soldiers in each Cavity")
+```
+
+

@@ -1,0 +1,102 @@
+---
+title: "Model4-lswn"
+author: "Greta Gadbois"
+date: "September 22, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+lswn = read.csv('SAD-Model4-7.csv')
+#largeVsmall <- largeVsmall[largeVsmall$large.perc > largeVsmall$small.perc, ]
+
+library(plyr)
+
+enough.wide.guards = lswn$enough.guards.wide[1]
+enough.narrow.guards =lswn$enough.guards.narrow[1]
+
+aggLvS <- ddply(lswn, c("num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"), summarise, 
+                #reps = length(ln.max),
+                ln = mean(ln),
+                lw = mean(lw),
+                sn = mean(sn),
+                sw = mean(sw)
+                #ln.max.sd = sd(ln.max),
+                #ln.min.sd = sd(ln.min),
+                #sn.max.sd = sd(sn.max),
+                #sn.min.sd = sd(sn.min)
+                )
+
+```
+
+You can also embed plots, for example:
+
+```{r}
+library(reshape2)
+aggLvS.m <- melt(aggLvS, id.vars = c("num.ants","large.perc", "small.perc", "enough.narrow", "enough.wide", "not.enough"))
+
+calculateFitness <- function(dfm){
+  dfm$h <- ifelse(dfm$variable == 'ln' | 
+                          dfm$variable == 'sn' | 
+                          dfm$variable == 'ln' | 
+                          dfm$variable == 'sn', ceiling(enough.narrow.guards/2), ceiling(enough.wide.guards/2))
+  dfm$v <- ifelse(dfm$variable == 'ln' |
+                          dfm$variable == 'ln' |
+                          dfm$variable == 'lw' |
+                          dfm$variable == 'lw', 60, 20)
+  
+  dfm$d <- (dfm$h^(-1/5))/(1+exp(-(5/dfm$h)*(dfm$value-dfm$h)))
+  dfm$s <- exp(-(20)*(1-dfm$d))
+  
+  dfm
+  
+  dfFit <- ddply(dfm, c("large.perc", "not.enough", "small.perc", "enough.narrow", "enough.wide", "num.ants"), summarise, fitness = sum(v*s))
+  
+  return(dfFit)
+  #plot(dfFit$num.ants, dfFit$fitness)
+}
+
+LvS <- calculateFitness(aggLvS.m)
+
+
+
+#5 ants
+hist(LvS[LvS$num.ants == 5, ]$fitness)
+best5 = LvS[LvS$num.ants == 5 & LvS$fitness >50, ]
+length(best5$fitness)
+hist(best5$large.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best5$small.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best5$large.perc - best5$small.perc, breaks = c(-1.05,-.95,-.85,-.75,-.65,-.55,-.45,-.35,-.25,-.15,-.05,.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best5$not.enough, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best5$enough.narrow, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best5$enough.wide, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+# 
+#15 ants
+hist(LvS[LvS$num.ants == 15, ]$fitness)
+best15 = LvS[LvS$num.ants == 15 & LvS$fitness > 79, ]
+length(best15$fitness)
+hist(best15$large.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best15$small.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best15$large.perc - best15$small.perc, breaks = c(-1.05,-.95,-.85,-.75,-.65,-.55,-.45,-.35,-.25,-.15,-.05,.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best15$not.enough, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best15$enough.narrow, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best15$enough.wide, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+
+# 
+# 
+#25 ants
+hist(LvS[LvS$num.ants == 25, ]$fitness)
+best25 = LvS[LvS$num.ants == 25 & LvS$fitness > 80, ]
+length(best25$fitness)
+hist(best25$large.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best25$small.perc, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best25$large.perc - best25$small.perc, breaks = c(-1.05,-.95,-.85,-.75,-.65,-.55,-.45,-.35,-.25,-.15,-.05,.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best25$not.enough, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best25$enough.narrow, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+hist(best25$enough.wide, breaks = c(.05, .15, .25, .35, .45,.55,.65,.75,.85,.95,1.05))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
