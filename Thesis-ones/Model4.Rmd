@@ -83,6 +83,7 @@ LvStoGraph <- ddply(largeVsmall, "num.ants", summarise,
                  #ln.min.sd = sd(ln.min)
                  )
 
+
 ```
 
 You can also embed plots, for example:
@@ -112,7 +113,7 @@ ggplot(WvStoGraph.m, aes(x = num.ants, y = value, fill=variable)) +
 
 ```bb
 calculate fitness
-```{r eval=FALSE}
+```{r, eval=FALSE}
 
 calculateFitness <- function(dfm){
   dfm$h <- ifelse(dfm$variable == 'ln.max' | 
