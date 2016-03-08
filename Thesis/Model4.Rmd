@@ -111,7 +111,7 @@ ggplot(WvStoGraph.m, aes(x = num.ants, y = value, fill=variable)) +
   scale_x_continuous(breaks = seq(0, 32, by = 4)) +
   labs( x = "Number of ants", y = "Simulated Soldier Deployment")
 
-```bb
+```
 calculate fitness
 ```{r, eval=FALSE}
 
